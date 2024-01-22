@@ -1,0 +1,7 @@
+{
+  "name": "reactFire",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
