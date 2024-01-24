@@ -38,7 +38,7 @@ const selectAuth = () => {
 
   return auth;
 }
-const FIREBASE_AUTH = selectAuth();
+export const FIREBASE_AUTH = selectAuth();
 
 
 

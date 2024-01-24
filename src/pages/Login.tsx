@@ -6,9 +6,17 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
+  useIonAlert,
+  useIonLoading,
 } from "@ionic/react";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { FIREBASE_AUTH } from "../config/FirebaseConfig";
+import { FirebaseError } from "firebase/app";
 
 type FormValues = {
   email: string;
@@ -25,15 +33,73 @@ const Login: React.FC = () => {
     mode: "onBlur",
   });
 
+  const [show, hide] = useIonLoading();
+  const [present, dismiss] = useIonAlert();
+
   const onRegister = async () => {
     console.log("register: ", getValues());
+    const { email, password } = getValues();
+    await show();
+    try {
+      await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        present({
+          header: "Registration Failed",
+          message: error.message,
+          buttons: ["OK"],
+        });
+      }
+    } finally {
+      await hide();
+    }
   };
 
   const onLogin = async (data: FormValues) => {
-    console.log(data);
+    const { email, password } = data;
+    await show();
+    try {
+      const user = await signInWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
+      );
+      console.log("this is user", user);
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        present({
+          header: "Login Failed",
+          message: error.message,
+          buttons: ["OK"],
+        });
+      }
+    } finally {
+      await hide();
+    }
   };
 
-  const sendReset = async () => {};
+  const sendReset = async () => {
+    const { email, password } = data;
+    await show();
+    try {
+      const user = await signInWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
+      );
+      console.log("this is user", user);
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        present({
+          header: "Login Failed",
+          message: error.message,
+          buttons: ["OK"],
+        });
+      }
+    } finally {
+      await hide();
+    }
+  };
 
   return (
     <IonPage>
@@ -47,7 +113,7 @@ const Login: React.FC = () => {
           <IonInput
             className={`${
               errors.email ? "ion-invalid" : "ion-valid"
-            } ion-touched`}
+            } ion-touched ion-margin-bottom`}
             fill="outline"
             label="Email"
             type="email"
@@ -65,7 +131,7 @@ const Login: React.FC = () => {
           <IonInput
             className={`${
               errors.password ? "ion-invalid" : "ion-valid"
-            } ion-touched`}
+            } ion-touched ion-margin-bottom`}
             fill="outline"
             label="Password"
             type="password"
@@ -80,8 +146,31 @@ const Login: React.FC = () => {
             })}
             errorText={errors.email?.message}
           />
-          <IonButton expand="block" type="submit" disabled={!isValid}>
+          <IonButton
+            color="secondary"
+            expand="block"
+            type="submit"
+            disabled={!isValid}
+          >
             Login
+          </IonButton>
+          <IonButton
+            color={"tertiary"}
+            onClick={onRegister}
+            expand="block"
+            type="button"
+            disabled={!isValid}
+          >
+            Create Account
+          </IonButton>
+          <IonButton
+            color={"tertiary"}
+            onClick={sendReset}
+            expand="block"
+            type="button"
+            disabled={getValues("email") === ""}
+          >
+            Reset Password
           </IonButton>
         </form>
       </IonContent>
