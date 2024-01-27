@@ -8,15 +8,18 @@ import {
   IonToolbar,
   useIonAlert,
   useIonLoading,
+  useIonRouter,
 } from "@ionic/react";
 import {
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FIREBASE_AUTH } from "../config/FirebaseConfig";
 import { FirebaseError } from "firebase/app";
+import { useAuth } from "../context/AuthContext";
 
 type FormValues = {
   email: string;
@@ -35,6 +38,15 @@ const Login: React.FC = () => {
 
   const [show, hide] = useIonLoading();
   const [present, dismiss] = useIonAlert();
+
+  const { user } = useAuth();
+  const router = useIonRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.push("/home", "forward", "replace");
+    }
+  }, [user]);
 
   const onRegister = async () => {
     console.log("register: ", getValues());
@@ -79,14 +91,10 @@ const Login: React.FC = () => {
   };
 
   const sendReset = async () => {
-    const { email, password } = data;
+    const { email } = getValues();
     await show();
     try {
-      const user = await signInWithEmailAndPassword(
-        FIREBASE_AUTH,
-        email,
-        password
-      );
+      const user = await sendPasswordResetEmail(FIREBASE_AUTH, email);
       console.log("this is user", user);
     } catch (error) {
       if (error instanceof FirebaseError) {
